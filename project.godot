@@ -7,7 +7,7 @@ config_version=5
 
 config/name="Midnighty Room"
 config/description="A cozy late-night room to decorate, with a focus timer, to-do list and a mixable lofi soundscape."
-config/version="0.1.0"
+config/version="0.2.0"
 run/main_scene="res://scenes/main.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
 run/max_fps=60
@@ -28,6 +28,12 @@ window/size/viewport_width=1280
 window/size/viewport_height=720
 window/stretch/mode="canvas_items"
 window/stretch/aspect="keep"
+window/per_pixel_transparency/allowed=true
+
+[internationalization]
+
+locale/translations=PackedStringArray("res://locale/strings.en.translation", "res://locale/strings.ms.translation")
+locale/fallback="en"
 
 [rendering]
 

@@ -51,6 +51,7 @@ func _rebuild() -> void:
 		var row := HBoxContainer.new()
 		var check := CheckBox.new()
 		check.text = todo["text"]
+		check.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
 		check.button_pressed = todo["done"]
 		check.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		check.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
@@ -62,7 +63,7 @@ func _rebuild() -> void:
 			var reward := GameState.set_todo_done(i, on)
 			if reward > 0:
 				AudioMixer.play_sfx("coin")
-				GameState.toast.emit("Task done  +%d moonlight" % reward))
+				GameState.toast.emit(tr("Task done  +%d moonlight") % reward))
 		row.add_child(check)
 		var remove := Button.new()
 		remove.icon = UIKit.icon("close")

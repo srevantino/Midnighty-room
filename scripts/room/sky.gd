@@ -3,7 +3,7 @@ extends Node2D
 ## skyline with lit windows, and rain. Lives on its own CanvasLayer behind the
 ## room so the room's night tint and lamp light do not affect it.
 
-const RECT := Rect2(117, 23, 86, 58)
+var RECT := Rect2(117, 23, 86, 58)
 
 var room: Room
 var _stars: Array[Vector3] = []      # x, y, twinkle phase
@@ -14,22 +14,36 @@ var _time := 0.0
 
 
 func _ready() -> void:
+	_generate()
+
+
+## Called by Room when the window changes size or position.
+func set_rect(rect: Rect2) -> void:
+	RECT = rect
+	_generate()
+
+
+func _generate() -> void:
+	_stars.clear()
+	_buildings.clear()
+	_clouds.clear()
+	_rain.clear()
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 4042
-	for i in 34:
+	for i in int(RECT.size.x * 0.4):
 		_stars.append(Vector3(rng.randf_range(0, RECT.size.x), rng.randf_range(0, RECT.size.y * 0.7), rng.randf_range(0, TAU)))
 	var x := -2.0
 	while x < RECT.size.x:
 		var w := float(rng.randi_range(6, 13))
-		var h := float(rng.randi_range(8, 26))
+		var h := float(rng.randi_range(8, int(RECT.size.y * 0.46)))
 		var lit: Array[bool] = []
 		for j in 40:
 			lit.append(rng.randf() < 0.42)
 		_buildings.append({"x": x, "w": w, "h": h, "lit": lit, "shade": rng.randf_range(0.0, 0.12)})
 		x += w + rng.randi_range(0, 2)
-	for i in 4:
-		_clouds.append(Vector3(rng.randf_range(0, RECT.size.x), rng.randf_range(4, 22), rng.randf_range(14, 26)))
-	for i in 46:
+	for i in maxi(2, int(RECT.size.x / 22.0)):
+		_clouds.append(Vector3(rng.randf_range(0, RECT.size.x), rng.randf_range(4, RECT.size.y * 0.4), rng.randf_range(14, 26)))
+	for i in int(RECT.size.x * 0.55):
 		_rain.append(Vector2(rng.randf_range(-6, RECT.size.x), rng.randf()))
 
 

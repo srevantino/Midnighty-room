@@ -63,6 +63,8 @@ static func build_theme() -> Theme:
 	theme.set_icon("grabber", "HSlider", grabber)
 	theme.set_icon("grabber_highlight", "HSlider", _circle(14, ACCENT.lightened(0.3)))
 
+	theme.set_stylebox("background", "ProgressBar", box(Color(0.05, 0.045, 0.1, 0.9), 5, Color.TRANSPARENT, 0))
+	theme.set_stylebox("fill", "ProgressBar", box(ACCENT, 5, Color.TRANSPARENT, 0))
 	theme.set_stylebox("panel", "PopupMenu", box(BG, 8, BORDER, 6))
 	theme.set_stylebox("hover", "PopupMenu", box(BG_HOVER, 6, Color.TRANSPARENT, 4))
 	theme.set_stylebox("panel", "TooltipPanel", box(BG, 6, BORDER, 6))
@@ -127,7 +129,8 @@ static func slider_row(text: String, value: float, on_change: Callable, label_wi
 
 
 static func section(text: String) -> Label:
-	var node := label(text.to_upper(), 12, MUTED)
+	var node := label(text, 12, MUTED)
+	node.uppercase = true
 	return node
 
 

@@ -7,7 +7,8 @@ extends Node
 ## rich presence. Nothing else in the code talks to Steam directly.
 ##
 ## Create achievements with these API names in Steamworks:
-##   FIRST_FOCUS, FOCUS_10_HOURS, STREAK_7, NIGHT_OWL, DECORATOR
+##   FIRST_FOCUS, FOCUS_10_HOURS, STREAK_7, NIGHT_OWL, DECORATOR,
+##   LEVEL_5, LEVEL_10, NEW_ROOM, DAILY_HAT_TRICK
 
 var available := false
 var _steam: Object
@@ -24,6 +25,12 @@ func _ready() -> void:
 		return
 	FocusTimer.focus_completed.connect(_on_focus_completed)
 	FocusTimer.phase_changed.connect(_on_phase_changed)
+	GameState.room_changed.connect(func() -> void:
+		if int(GameState.data["room"]) > 0:
+			unlock("NEW_ROOM"))
+	GameState.goals_changed.connect(func() -> void:
+		if GameState.all_goals_done():
+			unlock("DAILY_HAT_TRICK"))
 
 
 func _process(_delta: float) -> void:
@@ -55,6 +62,13 @@ func _on_phase_changed(phase: String) -> void:
 		return
 	var text := {"idle": "Relaxing in the room", "focus": "In a focus session", "rest": "Taking a break"}
 	_steam.call("setRichPresence", "steam_display", text[phase])
+
+
+func on_level(level: int) -> void:
+	if level >= 5:
+		unlock("LEVEL_5")
+	if level >= 10:
+		unlock("LEVEL_10")
 
 
 func on_items_placed(count: int) -> void:

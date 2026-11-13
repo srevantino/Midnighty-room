@@ -2,12 +2,17 @@ extends Node
 ## Autoload "AudioMixer": ambience layers, the music player and UI sounds.
 ## Buses are created at runtime (Master > Music, Ambience, SFX) so there is no
 ## bus layout resource to keep in sync.
+##
+## Players can add their own music: any .mp3, .ogg or .wav dropped into
+## user://music shows up after the built-in tracks.
 
 signal track_changed(title: String)
 signal music_state_changed(playing: bool)
 signal layer_changed(id: String, volume: float)
+signal playlist_changed
 
 const AUDIO_DIR := "res://assets/audio/"
+const USER_MUSIC_DIR := "user://music"
 const LAYERS := [
 	{"id": "rain", "name": "Rain"},
 	{"id": "fire", "name": "Fireplace"},
@@ -24,6 +29,8 @@ const TRACKS := [
 ]
 const LOOPS_PER_TRACK := 4
 
+## Built-in tracks followed by the player's own: {title, file} or {title, path}
+var playlist: Array = []
 var _layer_players: Dictionary = {}
 var _music: AudioStreamPlayer
 var _sfx: Dictionary = {}
@@ -50,6 +57,7 @@ func _ready() -> void:
 		_apply_layer(layer["id"])
 	_music = AudioStreamPlayer.new()
 	_music.bus = "Music"
+	_music.finished.connect(func() -> void: next_track(1, true))
 	add_child(_music)
 	for sfx_name: String in ["chime", "click", "place", "coin", "purr", "switch"]:
 		var p := AudioStreamPlayer.new()
@@ -58,7 +66,8 @@ func _ready() -> void:
 		add_child(p)
 		_sfx[sfx_name] = p
 	apply_volumes()
-	_track = clampi(int(GameState.data["music"]["track"]), 0, TRACKS.size() - 1)
+	scan_user_music()
+	_track = clampi(int(GameState.data["music"]["track"]), 0, playlist.size() - 1)
 	_load_track()
 	if GameState.data["music"]["playing"]:
 		_music.play()
@@ -68,7 +77,7 @@ func _process(_delta: float) -> void:
 	if not _music.playing:
 		return
 	var pos := _music.get_playback_position()
-	if pos + 1.0 < _last_pos:  # the loop wrapped around
+	if pos + 1.0 < _last_pos:  # a built-in loop wrapped around
 		_loops += 1
 		if _loops >= LOOPS_PER_TRACK:
 			next_track()
@@ -77,14 +86,11 @@ func _process(_delta: float) -> void:
 
 
 func apply_volumes() -> void:
-	_set_bus("Master", float(GameState.setting("master")))
-	_set_bus("Music", float(GameState.setting("music")))
-
-
-func _set_bus(bus_name: String, linear: float) -> void:
-	var idx := AudioServer.get_bus_index(bus_name)
-	AudioServer.set_bus_mute(idx, linear <= 0.001)
-	AudioServer.set_bus_volume_db(idx, linear_to_db(maxf(linear, 0.001)))
+	for bus_name: String in ["Master", "Music", "Ambience", "SFX"]:
+		var linear := float(GameState.setting(bus_name.to_lower()))
+		var idx := AudioServer.get_bus_index(bus_name)
+		AudioServer.set_bus_mute(idx, linear <= 0.001)
+		AudioServer.set_bus_volume_db(idx, linear_to_db(maxf(linear, 0.001)))
 
 
 # ----------------------------------------------------------------- layers
@@ -111,9 +117,52 @@ func _apply_layer(id: String) -> void:
 
 
 # ------------------------------------------------------------------ music
+func user_music_folder() -> String:
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(USER_MUSIC_DIR))
+	return ProjectSettings.globalize_path(USER_MUSIC_DIR)
+
+
+## Rebuilds the playlist from the built-in tracks plus the user's music folder.
+func scan_user_music() -> int:
+	playlist = TRACKS.duplicate()
+	user_music_folder()
+	var found := 0
+	var files := DirAccess.get_files_at(USER_MUSIC_DIR)
+	files.sort()
+	for file in files:
+		if file.get_extension().to_lower() in ["mp3", "ogg", "wav"]:
+			playlist.append({"title": file.get_basename().replace("_", " "), "path": USER_MUSIC_DIR + "/" + file})
+			found += 1
+	if _track >= playlist.size():
+		_track = 0
+		if _music and _music.stream:
+			_load_track()
+	playlist_changed.emit()
+	return found
+
+
+func _stream_for(entry: Dictionary) -> AudioStream:
+	if entry.has("file"):
+		var builtin := load(AUDIO_DIR + entry["file"] + ".ogg") as AudioStreamOggVorbis
+		builtin.loop = true
+		return builtin
+	var path: String = entry["path"]
+	match path.get_extension().to_lower():
+		"mp3":
+			return AudioStreamMP3.load_from_file(path)
+		"ogg":
+			return AudioStreamOggVorbis.load_from_file(path)
+		"wav":
+			return AudioStreamWAV.load_from_file(path)
+	return null
+
+
 func _load_track() -> void:
-	var stream := load(AUDIO_DIR + TRACKS[_track]["file"] + ".ogg") as AudioStreamOggVorbis
-	stream.loop = true
+	var stream := _stream_for(playlist[_track])
+	if stream == null:  # unreadable file: drop it and fall back to the first track
+		playlist.remove_at(_track)
+		_track = 0
+		stream = _stream_for(playlist[0])
 	_music.stream = stream
 	_loops = 0
 	_last_pos = 0.0
@@ -121,7 +170,11 @@ func _load_track() -> void:
 
 
 func track_title() -> String:
-	return TRACKS[_track]["title"]
+	return playlist[_track]["title"]
+
+
+func track_index() -> int:
+	return _track
 
 
 func is_music_playing() -> bool:
@@ -138,9 +191,9 @@ func toggle_music() -> void:
 	music_state_changed.emit(_music.playing)
 
 
-func next_track(step: int = 1) -> void:
-	var was_playing := _music.playing
-	_track = posmod(_track + step, TRACKS.size())
+func next_track(step: int = 1, force_play: bool = false) -> void:
+	var was_playing := _music.playing or force_play
+	_track = posmod(_track + step, playlist.size())
 	GameState.data["music"]["track"] = _track
 	GameState.mark_dirty()
 	_load_track()

@@ -60,7 +60,7 @@ func _ready() -> void:
 		grid.add_child(cell)
 		_stats[key] = value
 	body.add_child(grid)
-	var hint := UIKit.label("Each focused minute earns 1 moonlight, plus %d for finishing a session." % GameState.SESSION_BONUS, 13, UIKit.MUTED)
+	var hint := UIKit.label(tr("Each focused minute earns 1 moonlight, plus %d for finishing a session.") % GameState.SESSION_BONUS, 13, UIKit.MUTED)
 	hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	body.add_child(hint)
 
@@ -77,6 +77,7 @@ func _choice_row(choices: Array, store: Array[Button], on_pick: Callable) -> HBo
 		var b := UIKit.button(str(value), func() -> void:
 			on_pick.call(value)
 			_refresh())
+		b.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
 		b.toggle_mode = true
 		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		b.set_meta("value", value)
