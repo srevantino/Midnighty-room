@@ -1,0 +1,8 @@
+.godot/
+build/
+*.tmp
+*.translation
+export_credentials.cfg
+steam_appid.txt
+tools/art_preview.png
+__pycache__/
