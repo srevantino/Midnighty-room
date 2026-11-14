@@ -20,13 +20,13 @@ var _next: Button
 
 
 func _ready() -> void:
-	set_anchors_preset(Control.PRESET_FULL_RECT)
+	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	var dim := ColorRect.new()
 	dim.color = Color(0.03, 0.02, 0.08, 0.6)
-	dim.set_anchors_preset(Control.PRESET_FULL_RECT)
+	dim.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(dim)
 	var centre := CenterContainer.new()
-	centre.set_anchors_preset(Control.PRESET_FULL_RECT)
+	centre.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(centre)
 	var card := PanelContainer.new()
 	card.custom_minimum_size = Vector2(460, 0)
@@ -37,6 +37,7 @@ func _ready() -> void:
 	_icon = TextureRect.new()
 	_icon.custom_minimum_size = Vector2(64, 64)
 	_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	box.add_child(_icon)
 	_title = UIKit.label("", 26)
 	_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -62,7 +63,9 @@ func _ready() -> void:
 
 func _show() -> void:
 	var step: Array = STEPS[_index]
-	_icon.texture = UIKit.icon(step[0])
+	# the welcome card shows the logo instead of an icon
+	_icon.texture = load("res://assets/branding/logo_wordmark.png") if _index == 0 else UIKit.icon(step[0])
+	_icon.custom_minimum_size = Vector2(240, 110) if _index == 0 else Vector2(64, 64)
 	_title.text = step[1]
 	_text.text = step[2]
 	_dots.text = "%d / %d" % [_index + 1, STEPS.size()]

@@ -1,3 +1,5 @@
+<p align="center"><img src="assets/branding/logo_banner.png" alt="Midnighty Room" width="640"></p>
+
 # Midnighty Room
 
 A cozy late-night room that sits on your desktop while you work. Decorate it, mix your own lofi soundscape, run a focus timer, tick off tasks, and level up to unlock furniture and new rooms.
@@ -59,6 +61,7 @@ assets/sprites, icons, audio
 locale/strings.csv          all interface text and translations
 tools/gen_art.py            regenerates every sprite
 tools/gen_audio.py          regenerates every sound
+tools/gen_logo.py           regenerates the logo, banner and app icon (assets/branding/)
 tools/extract_strings.py    refreshes locale/strings.csv from the scripts
 docs/                       market notes and the Steam release checklist
 ```

@@ -872,8 +872,6 @@ def more_icons():
     icon("star", lambda d: d.polygon([(8, 1), (10, 6), (15, 6), (11, 9), (13, 14), (8, 11), (3, 14), (5, 9), (1, 6), (6, 6)], fill=AMB1))
     icon("check", lambda d: d.line([(3, 8), (6, 11), (12, 4)], fill=GRN2, width=2))
     icon("lock", lambda d: (d.rectangle([4, 7, 11, 13], fill=GREY1), d.arc([5, 2, 10, 10], 180, 360, fill=GREY1, width=2)))
-    src = Image.open(os.path.join(ROOT, "icon.png"))
-    src.save(os.path.join(ROOT, "icon.ico"), sizes=[(16, 16), (32, 32), (48, 48), (64, 64), (128, 128), (256, 256)])
 
 
 if __name__ == "__main__":
@@ -902,7 +900,6 @@ if __name__ == "__main__":
         for f in (0, 1):
             variants("avatar_%s_%d" % (pose, f), "lavender", ["teal", "rose", "amber"])
     icons()
-    app_icon()
-    more_icons()
+    more_icons()      # the app icon comes from tools/gen_logo.py
     sheet(imgs)
     print("wrote %d base sprites, %d files" % (len(imgs), len(os.listdir(SPR))))
