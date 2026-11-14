@@ -316,11 +316,281 @@ def oneshots(rng):
     write_wav(os.path.join(OUT, "switch.wav"), norm(butter(noise(len(t), rng), "bandpass", [1500, 4000]) * np.exp(-t * 80), 0.35))
 
 
+# ============================================================ more music
+# Thirteen more loops in different moods. Each style is a small arranger that
+# writes notes into buses (keys, bass, drums, lead, pad) which are then mixed.
+QUALITIES = {
+    "maj7": [0, 4, 7, 11], "m7": [0, 3, 7, 10], "7": [0, 4, 7, 10], "m9": [0, 3, 7, 10, 14],
+    "maj9": [0, 4, 7, 11, 14], "6": [0, 4, 7, 9], "add9": [0, 4, 7, 14], "m": [0, 3, 7], "M": [0, 4, 7],
+    "sus2": [0, 2, 7], "m6": [0, 3, 7, 9], "9": [0, 4, 7, 10, 14],
+}
+NOTE = {"C": 0, "C#": 1, "D": 2, "Eb": 3, "E": 4, "F": 5, "F#": 6, "G": 7, "Ab": 8, "A": 9, "Bb": 10, "B": 11}
+
+
+def ch(name):
+    """'Dm9' -> (bass note, [chord notes around middle C])."""
+    root = name[:2] if len(name) > 1 and name[1] in "#b" else name[:1]
+    quality = name[len(root):] or "M"
+    base = 48 + NOTE[root]
+    return base - 12, [base + i for i in QUALITIES[quality]]
+
+
+def pad(freq, dur):
+    n = int(dur * SR)
+    t = np.arange(n) / SR
+    x = sum(signal.sawtooth(2 * np.pi * freq * d * t + i) for i, d in enumerate((0.996, 1.0, 1.004))) / 3.0
+    env = np.minimum(t / 0.9, 1.0) * np.minimum((dur - t) / 1.2, 1.0).clip(0)
+    return butter(x, "lowpass", 900) * env
+
+
+def piano(freq, dur, vel=1.0):
+    n = int(dur * SR)
+    t = np.arange(n) / SR
+    x = np.zeros(n)
+    for k in range(1, 7):
+        x += np.sin(2 * np.pi * freq * k * np.sqrt(1 + 0.0004 * k * k) * t) * np.exp(-t * (1.1 + 0.7 * k)) / k ** 1.4
+    return x * (1 - np.exp(-t * 400)) * vel
+
+
+def musicbox(freq, dur):
+    t = np.arange(int(dur * SR)) / SR
+    return (np.sin(2 * np.pi * freq * t) * np.exp(-t * 3.0) + 0.4 * np.sin(2 * np.pi * freq * 4.0 * t) * np.exp(-t * 9.0)
+            + 0.2 * np.sin(2 * np.pi * freq * 6.3 * t) * np.exp(-t * 15.0)) * (1 - np.exp(-t * 800))
+
+
+def chip(freq, dur, duty=0.5, decay=5.0, vibrato=0.0):
+    t = np.arange(int(dur * SR)) / SR
+    phase = 2 * np.pi * freq * (t + vibrato * np.sin(2 * np.pi * 5.5 * t) / (2 * np.pi * 5.5))
+    return signal.square(phase, duty) * np.exp(-t * decay) * (1 - np.exp(-t * 600))
+
+
+def triangle(freq, dur, decay=3.0):
+    t = np.arange(int(dur * SR)) / SR
+    return signal.sawtooth(2 * np.pi * freq * t, 0.5) * np.exp(-t * decay) * (1 - np.exp(-t * 300))
+
+
+def pluck(freq, dur, vel=1.0):
+    t = np.arange(int(dur * SR)) / SR
+    x = sum(np.sin(2 * np.pi * freq * k * t) * np.exp(-t * (2.0 + 1.6 * k)) / k for k in range(1, 9))
+    return x * (1 - np.exp(-t * 900)) * vel
+
+
+def sawbass(freq, dur):
+    t = np.arange(int(dur * SR)) / SR
+    x = signal.sawtooth(2 * np.pi * freq * t) + 0.5 * np.sin(2 * np.pi * freq * t)
+    return butter(x, "lowpass", 420) * np.exp(-t * 6.0) * (1 - np.exp(-t * 300))
+
+
+def ride(rng, accent=1.0):
+    t = np.arange(int(0.35 * SR)) / SR
+    return butter(noise(len(t), rng), "bandpass", [5500, 11000]) * np.exp(-t * 11) * accent
+
+
+def shaker(rng):
+    t = np.arange(int(0.07 * SR)) / SR
+    return butter(noise(len(t), rng), "bandpass", [4000, 9000]) * np.sin(np.pi * t / 0.07) ** 2
+
+
+def rim():
+    t = np.arange(int(0.05 * SR)) / SR
+    return (np.sin(2 * np.pi * 1700 * t) + 0.5 * np.sin(2 * np.pi * 2600 * t)) * np.exp(-t * 110)
+
+
+def flute(freq, dur):
+    t = np.arange(int(dur * SR)) / SR
+    vib = 1 + 0.005 * np.sin(2 * np.pi * 5 * t) * np.minimum(t / 0.3, 1)
+    env = np.minimum(t / 0.06, 1.0) * np.minimum((dur - t) / 0.12, 1.0).clip(0)
+    return (np.sin(2 * np.pi * freq * vib * t) + 0.25 * np.sin(4 * np.pi * freq * vib * t)) * env
+
+
+def reverb(x, n, rng, secs=1.1, decay=0.28):
+    """Convolution reverb whose tail wraps round the loop point."""
+    ir = noise(int(secs * SR), rng) * np.exp(-np.arange(int(secs * SR)) / (decay * SR))
+    src = np.concatenate([x, np.zeros(len(ir))])
+    wet = signal.fftconvolve(src, ir)[:len(src)]
+    wet[:len(ir)] += wet[n:n + len(ir)]
+    return norm(wet[:n], 1.0)
+
+
+def loop_filter(x, kind, freq):
+    """Filters a loop as if it had already been playing, so the seam stays continuous."""
+    lead_in = min(len(x), SR)
+    return butter(np.concatenate([x[-lead_in:], x]), kind, freq)[lead_in:]
+
+
+def melody_notes(rng, key, chord_notes, beats, density=0.5, steps=(0.5, 1.0, 1.0, 1.5)):
+    """Sparse pentatonic line that leans on chord tones: [(beat, midi note, length in beats)]."""
+    pent = [72 + key + i for i in (0, 2, 4, 7, 9, 12)]
+    out, pos = [], 0.0
+    while pos < beats - 0.5:
+        if rng.random() < density:
+            note = int(rng.choice(chord_notes)) + 12 if rng.random() < 0.45 else int(rng.choice(pent))
+            out.append((pos, note, float(rng.choice([1.0, 1.5, 2.0]))))
+        pos += float(rng.choice(steps))
+    return out
+
+
+def song(name, seed, bpm, prog, style, key="C", bars_per_chord=1, reps=2):
+    rng = np.random.default_rng(seed)
+    beat = 60.0 / bpm
+    chords = [ch(c) for c in prog]
+    bars = len(chords) * bars_per_chord * reps
+    n = int(bars * 4 * beat * SR)
+    k = NOTE[key]
+    bus = {b: np.zeros(n) for b in ("keys", "bass", "drums", "lead", "pad")}
+    at = lambda beats: int(beats * beat * SR)
+    swing = 0.0
+
+    for bar in range(bars):
+        ci = (bar // bars_per_chord) % len(chords)
+        root, notes = chords[ci]
+        nxt = chords[(ci + 1) % len(chords)][0]
+        b0 = bar * 4
+        first = bar % bars_per_chord == 0
+        second_half = bar >= bars // 2
+
+        if style == "ambient":
+            if first:
+                for nn in notes:
+                    add(bus["pad"], pad(midi(nn), bars_per_chord * 4 * beat + 2.0) * 0.16, at(b0))
+                add(bus["bass"], np.sin(2 * np.pi * midi(root) * np.arange(int(bars_per_chord * 4 * beat * SR)) / SR)
+                    * np.hanning(int(bars_per_chord * 4 * beat * SR)) * 0.3, at(b0))
+            for pos, nn, ln in melody_notes(rng, k, notes, 4, 0.4, (1.0, 1.5, 2.0)):
+                add(bus["keys"], piano(midi(nn), 4.0, rng.uniform(0.5, 0.9)) * 0.22, at(b0 + pos))
+
+        elif style == "piano":
+            ladder = sorted(notes + [notes[0] + 12, notes[1] + 12])
+            for i, idx in enumerate([0, 2, 1, 3, 2, 4, 3, 5] if len(ladder) > 5 else [0, 2, 1, 3, 2, 4, 3, 4]):
+                add(bus["keys"], piano(midi(ladder[idx]), 2.2, (0.8 if i % 4 == 0 else 0.5) * rng.uniform(0.85, 1.0)) * 0.2,
+                    at(b0 + i * 0.5) + int(rng.uniform(0, 0.012) * SR))
+            add(bus["bass"], piano(midi(root), 3.5, 0.9) * 0.3, at(b0))
+            if second_half or bar % 2 == 1:
+                for pos, nn, ln in melody_notes(rng, k, notes, 4, 0.5, (1.0, 1.0, 2.0)):
+                    add(bus["lead"], piano(midi(nn), 3.0, 0.9) * 0.24, at(b0 + pos))
+
+        elif style == "musicbox":
+            ladder = sorted(notes + [notes[0] + 12])
+            for i in range(8):
+                add(bus["keys"], musicbox(midi(ladder[(i * 2) % len(ladder)] + 12), 1.5) * 0.12, at(b0 + i * 0.5))
+            add(bus["bass"], musicbox(midi(root + 12), 3.0) * 0.2, at(b0))
+            for pos, nn, ln in melody_notes(rng, k, notes, 4, 0.7, (1.0, 1.0, 0.5, 2.0)):
+                add(bus["lead"], musicbox(midi(nn + 12), 2.5) * 0.2, at(b0 + pos))
+
+        elif style == "chip":
+            for i in range(16):
+                add(bus["keys"], chip(midi(notes[i % len(notes)] + (12 if (i // len(notes)) % 2 else 0)), 0.2, 0.25, 14) * 0.07, at(b0 + i * 0.25))
+            for i, nn in enumerate([root, root + 12, root + 7, root + 12]):
+                add(bus["bass"], triangle(midi(nn), beat * 0.9) * 0.3, at(b0 + i))
+            for i in range(8):
+                add(bus["drums"], hat(rng) * (0.10 if i % 2 else 0.06), at(b0 + i * 0.5))
+            for i in (0, 2):
+                add(bus["drums"], kick() * 0.28, at(b0 + i))
+            add(bus["drums"], snare(rng) * 0.22, at(b0 + 1)); add(bus["drums"], snare(rng) * 0.22, at(b0 + 3))
+            if second_half or bar % 4 >= 2:
+                for pos, nn, ln in melody_notes(rng, k, notes, 4, 0.65, (0.5, 0.5, 1.0, 1.0)):
+                    add(bus["lead"], chip(midi(nn), ln * beat, 0.5, 2.5, 0.004) * 0.09, at(b0 + pos))
+
+        elif style == "jazz":
+            swing = beat * 0.17
+            for i in range(4):
+                add(bus["drums"], ride(rng, 1.0 if i % 2 == 0 else 0.7) * 0.2, at(b0 + i))
+                if i % 2 == 1 or rng.random() < 0.35:
+                    add(bus["drums"], ride(rng, 0.5) * 0.14, at(b0 + i + 0.5) + int(swing * SR))
+                if i in (1, 3):
+                    add(bus["drums"], hat(rng) * 0.16, at(b0 + i))
+            if rng.random() < 0.5:
+                add(bus["drums"], snare(rng) * 0.12, at(b0 + float(rng.choice([1.5, 2.5, 3.5]))) + int(swing * SR))
+            walk = [root, root + int(rng.choice([3, 4, 7])), root + 7, nxt + int(rng.choice([-1, 1, 2]))]
+            for i, nn in enumerate(walk):
+                add(bus["bass"], bass(midi(nn), beat * 0.95) * 0.5, at(b0 + i))
+            for hit in ([0.0, 1.5] if bar % 2 == 0 else [0.5, 2.5]):
+                for j, nn in enumerate(notes):
+                    add(bus["keys"], epiano(midi(nn), beat * 1.6, rng.uniform(0.6, 0.9)) * 0.17, at(b0 + hit) + int((swing if hit % 1 else 0) * SR) + j * 400)
+            if second_half or bar % 4 == 3:
+                for pos, nn, ln in melody_notes(rng, k, notes, 4, 0.55, (0.5, 1.0, 1.0, 1.5)):
+                    add(bus["lead"], epiano(midi(nn), ln * beat * 1.2, 0.9) * 0.24, at(b0 + pos) + int((swing if pos % 1 else 0) * SR))
+
+        elif style == "synth":
+            if first:
+                for nn in notes:
+                    add(bus["pad"], pad(midi(nn + 12), bars_per_chord * 4 * beat + 1.0) * 0.12, at(b0))
+            for i in range(8):
+                add(bus["bass"], sawbass(midi(root), beat * 0.45) * (0.5 if i % 2 == 0 else 0.35), at(b0 + i * 0.5))
+            for i in range(4):
+                add(bus["drums"], kick() * 0.7, at(b0 + i))
+                if i in (1, 3):
+                    add(bus["lead"], snare(rng) * 0.3, at(b0 + i))      # snare goes through the reverb
+            for i in range(16):
+                add(bus["drums"], hat(rng) * (0.07 if i % 4 == 2 else 0.035), at(b0 + i * 0.25))
+            if second_half or bar % 4 >= 2:
+                for pos, nn, ln in melody_notes(rng, k, notes, 4, 0.45, (1.0, 1.5, 2.0)):
+                    tone = lead(midi(nn), ln * beat * 1.5) * 0.2
+                    add(bus["lead"], tone, at(b0 + pos))
+                    add(bus["lead"], tone * 0.4, at(b0 + pos + 0.75))       # dotted-eighth echo
+
+        elif style == "bossa":
+            pattern = [0.0, 1.5, 3.0] if bar % 2 == 0 else [0.5, 2.0, 3.5]
+            for hit in pattern:
+                for j, nn in enumerate(notes):
+                    add(bus["keys"], pluck(midi(nn), 1.4, rng.uniform(0.6, 0.9)) * 0.14, at(b0 + hit) + j * 500)
+                add(bus["drums"], rim() * 0.16, at(b0 + hit))
+            for pos, nn in ((0.0, root), (1.5, root), (2.0, root + 7), (3.5, root + 7)):
+                add(bus["bass"], bass(midi(nn), beat * 0.9) * 0.45, at(b0 + pos))
+            for i in range(8):
+                add(bus["drums"], shaker(rng) * (0.11 if i % 2 == 0 else 0.07), at(b0 + i * 0.5))
+            if second_half or bar % 4 >= 2:
+                for pos, nn, ln in melody_notes(rng, k, notes, 4, 0.55, (0.5, 1.0, 1.5)):
+                    add(bus["lead"], flute(midi(nn), ln * beat) * 0.13, at(b0 + pos))
+
+    mix_spec = {  # reverb send, reverb length, master lowpass, tape wobble, hiss
+        "ambient": (0.30, 2.4, 5000, 0.0010, 0.004), "piano": (0.22, 1.8, 6000, 0.0012, 0.004),
+        "musicbox": (0.25, 1.6, 7000, 0.0016, 0.006), "chip": (0.10, 0.8, 4500, 0.0, 0.0),
+        "jazz": (0.14, 1.0, 6500, 0.0010, 0.006), "synth": (0.22, 1.6, 7500, 0.0, 0.0),
+        "bossa": (0.14, 1.0, 7000, 0.0008, 0.004),
+    }
+    send, length, cutoff, wobble, hiss_level = mix_spec[style]
+    bus["bass"] = loop_filter(bus["bass"], "lowpass", 500)
+    bass_gain = {"ambient": 0.5, "chip": 0.5, "jazz": 0.55, "bossa": 0.55, "synth": 0.7}.get(style, 0.9)
+    dry = bus["keys"] + bus["lead"] + bus["pad"] + bus["bass"] * bass_gain + bus["drums"] * 0.8
+    wet = reverb(bus["keys"] + bus["lead"] * 1.2 + bus["pad"] * 0.6, n, rng, length, length * 0.25) * send
+    hiss = loop_filter(noise(n, rng), "bandpass", [1500, 8000]) * hiss_level
+    lch = loop_filter(dry + wet + hiss, "lowpass", cutoff)
+    rch = loop_filter(dry + np.roll(wet, int(0.017 * SR)) + np.roll(hiss, 999), "lowpass", cutoff)
+    if wobble:
+        src = np.cumsum(1 + wobble * np.sin(2 * np.pi * np.arange(n) / n * 3))
+        src = src / src[-1] * (n - 1)
+        lch, rch = np.interp(src, np.arange(n), lch), np.interp(src, np.arange(n), rch)
+    write_ogg(name, norm(np.tanh(stereo(lch, rch) * 1.4), 0.85), q=5)
+    print("%-28s %-9s %5.1fs" % (name, style, n / SR))
+
+
+def more_music(lofi_too=True):
+    pent = [0, 2, 4, 7, 9]
+    lofi = lambda prog: [ch(c) for c in prog]
+    if lofi_too:
+        track(51, 78, lofi(["Fmaj7", "Em7", "Am9", "G6"]), pent, "music_window_seat")
+        track(63, 70, lofi(["Dm9", "Bbmaj7", "Fmaj9", "C6"]), [5, 7, 9, 12, 14], "music_cocoa_steam")
+        track(77, 86, lofi(["Am9", "Dm9", "G9", "Cmaj9"]), pent, "music_night_bus")
+    song("music_moonlit_dust", 101, 60, ["Cmaj9", "Am9", "Fmaj9", "Gsus2"], "ambient", "C", bars_per_chord=2, reps=1)
+    song("music_before_sunrise", 113, 56, ["Dm9", "Bbmaj9", "Fadd9", "C6"], "ambient", "F", bars_per_chord=2, reps=1)
+    song("music_paper_planes", 127, 66, ["Cadd9", "Am7", "Fmaj7", "G6"], "piano", "C")
+    song("music_letters_unsent", 131, 60, ["Am9", "Fmaj7", "Cmaj7", "Em7"], "piano", "C")
+    song("music_sleepy_miso", 149, 72, ["F", "Dm", "Bb", "C"], "musicbox", "F")
+    song("music_pixel_lullaby", 157, 88, ["Cmaj7", "Am7", "Fmaj7", "G"], "chip", "C")
+    song("music_save_point", 163, 96, ["Am", "F", "C", "G"], "chip", "C")
+    song("music_rooftop_jazz", 173, 104, ["Dm9", "G9", "Cmaj9", "A7"], "jazz", "C")
+    song("music_neon_rain", 181, 84, ["Am9", "Fmaj9", "Cmaj9", "G6"], "synth", "C", bars_per_chord=2, reps=1)
+    song("music_sunday_bossa", 191, 108, ["Fmaj7", "Gm7", "Am7", "Bbmaj7"], "bossa", "F")
+
+
 if __name__ == "__main__":
+    import sys
     rng = np.random.default_rng(4042)
-    for name, fn in (("amb_rain", rain), ("amb_fire", fire), ("amb_wind", wind), ("amb_vinyl", vinyl),
-                     ("amb_city", city), ("amb_crickets", crickets), ("amb_brown", brown_loop)):
-        write_ogg(name, fn(rng))
-        print(name)
-    music()
-    oneshots(rng)
+    if "more" not in sys.argv:              # `python3 tools/gen_audio.py more` skips the original set
+        for name, fn in (("amb_rain", rain), ("amb_fire", fire), ("amb_wind", wind), ("amb_vinyl", vinyl),
+                         ("amb_city", city), ("amb_crickets", crickets), ("amb_brown", brown_loop)):
+            write_ogg(name, fn(rng))
+            print(name)
+        music()
+        oneshots(rng)
+    more_music("songs" not in sys.argv)

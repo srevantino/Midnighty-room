@@ -26,6 +26,19 @@ const TRACKS := [
 	{"file": "music_midnight_tea", "title": "Midnight Tea"},
 	{"file": "music_paper_lanterns", "title": "Paper Lanterns"},
 	{"file": "music_slow_rain", "title": "Slow Rain"},
+	{"file": "music_window_seat", "title": "Window Seat"},
+	{"file": "music_cocoa_steam", "title": "Cocoa Steam"},
+	{"file": "music_night_bus", "title": "Night Bus"},
+	{"file": "music_moonlit_dust", "title": "Moonlit Dust (ambient)"},
+	{"file": "music_before_sunrise", "title": "Before Sunrise (ambient)"},
+	{"file": "music_paper_planes", "title": "Paper Planes (piano)"},
+	{"file": "music_letters_unsent", "title": "Letters Unsent (piano)"},
+	{"file": "music_sleepy_miso", "title": "Sleepy Miso (music box)"},
+	{"file": "music_pixel_lullaby", "title": "Pixel Lullaby (chiptune)"},
+	{"file": "music_save_point", "title": "Save Point (chiptune)"},
+	{"file": "music_rooftop_jazz", "title": "Rooftop Jazz"},
+	{"file": "music_neon_rain", "title": "Neon Rain (synth)"},
+	{"file": "music_sunday_bossa", "title": "Sunday Bossa"},
 ]
 const LOOPS_PER_TRACK := 4
 
@@ -199,6 +212,13 @@ func next_track(step: int = 1, force_play: bool = false) -> void:
 	_load_track()
 	if was_playing:
 		_music.play()
+
+
+## Jumps straight to a playlist entry (used by the track picker).
+func play_index(index: int) -> void:
+	next_track(index - _track, true)
+	music_state_changed.emit(true)
+	GameState.data["music"]["playing"] = true
 
 
 func play_sfx(sfx_name: String) -> void:

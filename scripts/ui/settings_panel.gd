@@ -14,6 +14,12 @@ const UI_SCALES := [[0.85, "Small"], [1.0, "Normal"], [1.15, "Large"]]
 const MINI_STYLES := [["room", "Mini room"], ["small", "Tiny room"], ["widget", "Timer only (see-through)"]]
 const LANGUAGE_NAMES := {"en": "English", "ms": "Bahasa Melayu", "zh_CN": "简体中文", "ja": "日本語", "ko": "한국어"}
 
+## Shown under About. Edit these lines to credit artists, musicians and testers.
+const CREDITS := [
+	"A game by Advanced Systems 4042",
+	"Made with Godot Engine",
+]
+
 var _reset: Button
 var _reset_armed := false
 var _capturing := ""
@@ -53,6 +59,11 @@ func _ready() -> void:
 		_key_buttons[action] = b
 		body.add_child(_labelled(GameState.KEY_LABELS[action], b, 210))
 	_refresh_keys()
+
+	body.add_child(UIKit.section("About"))
+	for line: String in CREDITS:
+		body.add_child(UIKit.label(line, 14, UIKit.MUTED))
+	body.add_child(UIKit.button("Open-source licences", _show_licences))
 
 	body.add_child(UIKit.spacer(4))
 	_reset = UIKit.button("Reset everything", _on_reset)
@@ -99,6 +110,33 @@ func _check(text: String, key: String, on_value: Variant = true, off_value: Vari
 	box.toggled.connect(func(on: bool) -> void: GameState.set_setting(key, on_value if on else off_value))
 	GameState.settings_changed.connect(func() -> void: box.set_pressed_no_signal(GameState.setting(key) == on_value))
 	return box
+
+
+## Godot and the libraries inside it must be credited in every shipped game.
+func _show_licences() -> void:
+	var dialog := AcceptDialog.new()
+	dialog.title = tr("Open-source licences")
+	dialog.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
+	var text := "Midnighty Room is built with Godot Engine.\n\n" + Engine.get_license_text() + "\n\nThird-party components:\n"
+	for component: Dictionary in Engine.get_copyright_info():
+		var licences: Array[String] = []
+		for part: Dictionary in component["parts"]:
+			if str(part["license"]) not in licences:
+				licences.append(str(part["license"]))
+		text += "\n%s  (%s)" % [component["name"], ", ".join(licences)]
+	text += "\n\nFull licence texts: https://godotengine.org/license"
+	var scroll := ScrollContainer.new()
+	scroll.custom_minimum_size = Vector2(640, 420)
+	var label := UIKit.label(text, 13)
+	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	label.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
+	scroll.add_child(label)
+	dialog.add_child(scroll)
+	add_child(dialog)
+	dialog.confirmed.connect(dialog.queue_free)
+	dialog.canceled.connect(dialog.queue_free)
+	dialog.popup_centered()
 
 
 # ------------------------------------------------------------ key bindings

@@ -35,10 +35,10 @@ const KEY_LABELS := {
 ## Daily goal templates: counter to watch, text, possible targets.
 const GOAL_TYPES := [
 	{"id": "minutes", "text": "Focus for %d minutes", "targets": [25, 50, 90]},
-	{"id": "sessions", "text": "Finish %d focus sessions", "targets": [1, 2, 3]},
+	{"id": "sessions", "text": "Finish %d focus sessions", "one": "Finish a focus session", "targets": [1, 2, 3]},
 	{"id": "tasks", "text": "Tick off %d tasks", "targets": [2, 3, 5]},
-	{"id": "pets", "text": "Pet Miso %d times", "targets": [1, 3, 5]},
-	{"id": "moves", "text": "Rearrange %d things in your room", "targets": [1, 3, 5]},
+	{"id": "pets", "text": "Pet Miso %d times", "one": "Give Miso a pet", "targets": [1, 3, 5]},
+	{"id": "moves", "text": "Rearrange %d things in your room", "one": "Move something in your room", "targets": [1, 3, 5]},
 ]
 
 var data: Dictionary = {}
@@ -455,6 +455,8 @@ func goals() -> Array:
 func goal_text(goal: Dictionary) -> String:
 	for type: Dictionary in GOAL_TYPES:
 		if type["id"] == goal["id"]:
+			if int(goal["target"]) == 1 and type.has("one"):
+				return tr(type["one"])
 			return tr(type["text"]) % int(goal["target"])
 	return ""
 

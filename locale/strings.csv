@@ -9,6 +9,19 @@ Brown noise,Brown noise,Hingar perang
 Midnight Tea,Midnight Tea,
 Paper Lanterns,Paper Lanterns,
 Slow Rain,Slow Rain,
+Window Seat,Window Seat,
+Cocoa Steam,Cocoa Steam,
+Night Bus,Night Bus,
+Moonlit Dust (ambient),Moonlit Dust (ambient),
+Before Sunrise (ambient),Before Sunrise (ambient),
+Paper Planes (piano),Paper Planes (piano),
+Letters Unsent (piano),Letters Unsent (piano),
+Sleepy Miso (music box),Sleepy Miso (music box),
+Pixel Lullaby (chiptune),Pixel Lullaby (chiptune),
+Save Point (chiptune),Save Point (chiptune),
+Rooftop Jazz,Rooftop Jazz,
+Neon Rain (synth),Neon Rain (synth),
+Sunday Bossa,Sunday Bossa,
 Music,Music,Muzik
 Ambience,Ambience,Suasana
 Master,Master,Utama
@@ -22,9 +35,12 @@ Fullscreen,Fullscreen,Skrin penuh
 Screenshot,Screenshot,Tangkap skrin
 Focus for %d minutes,Focus for %d minutes,Fokus selama %d minit
 Finish %d focus sessions,Finish %d focus sessions,Selesaikan %d sesi fokus
+Finish a focus session,Finish a focus session,Selesaikan satu sesi fokus
 Tick off %d tasks,Tick off %d tasks,Tandakan %d tugasan
 Pet Miso %d times,Pet Miso %d times,Belai Miso %d kali
+Give Miso a pet,Give Miso a pet,Belai Miso
 Rearrange %d things in your room,Rearrange %d things in your room,Susun semula %d benda di bilik anda
+Move something in your room,Move something in your room,Alihkan sesuatu di bilik anda
 Full game only,Full game only,Permainan penuh sahaja
 Reach level %d,Reach level %d,Capai tahap %d
 Not enough moonlight yet,Not enough moonlight yet,Cahaya bulan belum cukup
@@ -198,7 +214,8 @@ Place,Place,Letak
 Buy and place,Buy and place,Beli dan letak
 Unlocked %s,Unlocked %s,%s dibuka
 The room is full. Remove something first.,The room is full. Remove something first.,Bilik sudah penuh. Buang sesuatu dahulu.
-Lofi player,Lofi player,Pemain lofi
+Music player,Music player,Pemain muzik
+Pick a track,Pick a track,Pilih lagu
 Prev,Prev,Sebelum
 Pause,Pause,Jeda
 Next,Next,Seterusnya
@@ -242,6 +259,8 @@ Tiny room,Tiny room,Bilik kecil
 Timer only (see-through),Timer only (see-through),Pemasa sahaja (lut sinar)
 English,English,
 Bahasa Melayu,Bahasa Melayu,
+A game by Advanced Systems 4042,A game by Advanced Systems 4042,Sebuah permainan oleh Advanced Systems 4042
+Made with Godot Engine,Made with Godot Engine,Dibina dengan Godot Engine
 Sound,Sound,Bunyi
 Everything,Everything,Semua
 Effects,Effects,Kesan
@@ -255,8 +274,27 @@ Language,Language,Bahasa
 Style,Style,Gaya
 Flash the taskbar when a timer ends,Flash the taskbar when a timer ends,Kelipkan bar tugas apabila pemasa tamat
 Keys,Keys,Kekunci
+About,About,Perihal
+Open-source licences,Open-source licences,Lesen sumber terbuka
 Reset everything,Reset everything,Set semula semuanya
  demo, demo,
+"Midnighty Room is built with Godot Engine.
+
+","Midnighty Room is built with Godot Engine.
+
+",
+"
+
+Third-party components:
+","
+
+Third-party components:
+",
+"
+
+Full licence texts: https://godotengine.org/license","
+
+Full licence texts: https://godotengine.org/license",
 Press a key...,Press a key...,Tekan satu kekunci...
 Really wipe all progress? Press again,Really wipe all progress? Press again,Padam semua kemajuan? Tekan sekali lagi
 Ready when you are,Ready when you are,Sedia bila-bila masa

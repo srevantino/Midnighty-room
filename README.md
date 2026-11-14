@@ -28,7 +28,7 @@ Ready-made Windows builds live in `build/` if you were given the project folder 
 | Panels | Every panel can be dragged by its title, collapsed (the minus button or a double-click on the title), and fades out of the way while you drag an item. |
 | A living room | Your character types while you focus, sips cocoa on breaks and dozes in the small hours. Miso the cat naps, wanders and sits. Plants sway, screens flicker, fires and candles dance. |
 | Day and night | Follows your system clock by default. Sun, moon, stars, clouds, a skyline with lit windows. Lamps glow as it gets dark. |
-| Sound mixer | 3 lofi loops and 7 ambience layers. Drop your own MP3, OGG or WAV files into the music folder (Sounds > Open music folder) and they join the playlist. |
+| Sound mixer | 16 music loops in eight moods (lofi, ambient, piano, music box, chiptune, jazz, synth, bossa) with a track picker, and 7 ambience layers. Drop your own MP3, OGG or WAV files into the music folder (Sounds > Open music folder) and they join the playlist. |
 | Focus timer | 15/25/45/60 minute blocks with breaks, optional auto-loop. Runs off the system clock, so it stays accurate when minimised. |
 | Progression | Moonlight (currency) from focus and tasks. XP levels up to 20; each level pays moonlight and unlocks items or a room. Three daily goals. Focus calendar and lifetime stats. |
 | Companion modes | Mini room, tiny room, or a timer-only pill on a see-through window. Always on top, draggable, remembers its position. System tray icon with a menu. Taskbar flash when a timer ends. |
@@ -63,7 +63,7 @@ tools/gen_art.py            regenerates every sprite
 tools/gen_audio.py          regenerates every sound
 tools/gen_logo.py           regenerates the logo, banner and app icon (assets/branding/)
 tools/extract_strings.py    refreshes locale/strings.csv from the scripts
-docs/                       market notes and the Steam release checklist
+docs/                       market notes, Steam release checklist, AI disclosure guide
 ```
 
 ## Adding content
@@ -119,13 +119,17 @@ Could not be verified in the build environment and needs a check on a real Windo
 - The mini window styles, especially the see-through timer widget and its click-through area.
 - The system tray icon and menu.
 - The taskbar flash when a timer ends.
-- How the synthesized audio actually sounds.
+- How the synthesized audio actually sounds. All 16 tracks were checked numerically (levels, bass balance, clean loop points) but never listened to. Remove any you dislike from `TRACKS` in `scripts/autoload/audio_mixer.gd`.
 
 Not done:
 
 - Steam: the hooks are written, but GodotSteam is not bundled (it could not be downloaded here) and no App ID is set, so achievements and cloud saves are untested. See `docs/STEAM_RELEASE.md`.
 - Chinese, Japanese and Korean translations. The Malay translation is machine-written and wants a native read-through.
 - Controller and Steam Deck layout.
+
+## Before publishing
+
+Read `docs/AI_DISCLOSURE.md`. It lists where every part of the game came from, what Steam expects you to disclose, and what to change so the game is not dismissed as AI slop.
 
 ## Roadmap suggestions
 

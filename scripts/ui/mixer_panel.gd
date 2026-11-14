@@ -5,15 +5,23 @@ extends BasePanel
 var _title: Label
 var _play: Button
 var _own: Label
+var _picker: OptionButton
 
 
 func _ready() -> void:
 	build("Sounds", 360)
-	body.add_child(UIKit.section("Lofi player"))
+	body.add_child(UIKit.section("Music player"))
 	_title = UIKit.label("", 19, UIKit.ACCENT)
 	_title.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
 	_title.clip_text = true
 	body.add_child(_title)
+	_picker = OptionButton.new()
+	_picker.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
+	_picker.fit_to_longest_item = false
+	_picker.clip_text = true
+	_picker.tooltip_text = "Pick a track"
+	_picker.item_selected.connect(func(i: int) -> void: AudioMixer.play_index(i))
+	body.add_child(_picker)
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 8)
 	row.add_child(UIKit.button("Prev", func() -> void: AudioMixer.next_track(-1), 70))
@@ -46,11 +54,20 @@ func _ready() -> void:
 
 	AudioMixer.track_changed.connect(func(_t: String) -> void: _refresh())
 	AudioMixer.music_state_changed.connect(func(_p: bool) -> void: _refresh())
-	AudioMixer.playlist_changed.connect(_refresh)
+	AudioMixer.playlist_changed.connect(_fill_picker)
+	_fill_picker()
+
+
+func _fill_picker() -> void:
+	_picker.clear()
+	for entry: Dictionary in AudioMixer.playlist:
+		_picker.add_item(entry["title"])
 	_refresh()
 
 
 func _refresh() -> void:
+	if AudioMixer.track_index() < _picker.item_count:
+		_picker.select(AudioMixer.track_index())
 	_title.text = tr(AudioMixer.track_title())
 	_play.text = "Pause" if AudioMixer.is_music_playing() else "Play"
 	var own := AudioMixer.playlist.size() - AudioMixer.TRACKS.size()

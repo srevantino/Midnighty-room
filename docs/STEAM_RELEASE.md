@@ -63,6 +63,8 @@ Consider setting `application/config/use_custom_user_dir` in Project Settings be
 
 - [ ] Self-test passes: `godot --headless --path . -- --selftest`
 - [ ] Final art and music in place, all licences in writing
+- [ ] Generative AI section of the Content Survey answered truthfully (see `AI_DISCLOSURE.md`)
+- [ ] Open-source licences screen checked (Settings > About)
 - [ ] Demo live, ideally through a Steam Next Fest
 - [ ] Localised store page and in-game text
 - [ ] Steam Deck check (it runs; the UI is mouse-driven)

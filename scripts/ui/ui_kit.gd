@@ -46,6 +46,9 @@ static func build_theme() -> Theme:
 		theme.set_stylebox("hover_pressed", type, box(BG_HOVER, 8, Color.TRANSPARENT, 8))
 		theme.set_stylebox("focus", type, StyleBoxEmpty.new())
 		theme.set_color("font_color", type, TEXT)
+	theme.set_icon("unchecked", "CheckBox", _checkbox(false))
+	theme.set_icon("checked", "CheckBox", _checkbox(true))
+	theme.set_constant("h_separation", "CheckBox", 10)
 
 	theme.set_stylebox("normal", "LineEdit", box(Color(0.05, 0.045, 0.1, 0.9), 8, BORDER, 8))
 	theme.set_stylebox("focus", "LineEdit", box(Color(0.05, 0.045, 0.1, 0.9), 8, ACCENT, 8))
@@ -70,6 +73,31 @@ static func build_theme() -> Theme:
 	theme.set_stylebox("panel", "TooltipPanel", box(BG, 6, BORDER, 6))
 	theme.set_color("font_color", "TooltipLabel", TEXT)
 	return theme
+
+
+## An 18px tick box drawn in code: outlined when off, filled amber with a tick when on.
+static func _checkbox(on: bool) -> ImageTexture:
+	var size := 18
+	var image := Image.create(size, size, false, Image.FORMAT_RGBA8)
+	var edge := ACCENT if on else Color(BORDER, 0.95)
+	for y in size:
+		for x in size:
+			var corner := (x < 2 or x > size - 3) and (y < 2 or y > size - 3) and (absi(x - (0 if x < 2 else size - 1)) + absi(y - (0 if y < 2 else size - 1))) < 2
+			if corner:
+				continue
+			var border := x < 2 or y < 2 or x > size - 3 or y > size - 3
+			if on:
+				image.set_pixel(x, y, ACCENT)
+			elif border:
+				image.set_pixel(x, y, edge)
+			else:
+				image.set_pixel(x, y, Color(0.05, 0.045, 0.1, 0.9))
+	if on:
+		var ink := Color(0.12, 0.09, 0.2)
+		for p: Vector2i in [Vector2i(4, 9), Vector2i(5, 10), Vector2i(6, 11), Vector2i(7, 12), Vector2i(8, 11), Vector2i(9, 10), Vector2i(10, 9), Vector2i(11, 8), Vector2i(12, 7), Vector2i(13, 6)]:
+			image.set_pixel(p.x, p.y, ink)
+			image.set_pixel(p.x, p.y - 1, ink)
+	return ImageTexture.create_from_image(image)
 
 
 static func _circle(size: int, colour: Color) -> ImageTexture:
