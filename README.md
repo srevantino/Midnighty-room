@@ -32,9 +32,9 @@ Ready-made Windows builds live in `build/` if you were given the project folder 
 | Focus timer | 15/25/45/60 minute blocks with breaks, optional auto-loop. Runs off the system clock, so it stays accurate when minimised. |
 | Progression | Moonlight (currency) from focus and tasks. XP levels up to 20; each level pays moonlight and unlocks items or a room. Three daily goals. Focus calendar and lifetime stats. |
 | Companion modes | Mini room, tiny room, or a timer-only pill on a see-through window. Always on top, draggable, remembers its position. System tray icon with a menu. Taskbar flash when a timer ends. |
-| Settings | Separate volumes, time of day, interface size, language, rebindable keys, battery saver. |
+| Settings | Separate volumes, time of day, interface size, rebindable keys, battery saver. |
 | First run | A five-card guide. |
-| Languages | English and Bahasa Melayu. All text goes through `locale/strings.csv`. |
+| Languages | English only for now. All text goes through `locale/strings.csv`, so a language can be added as a new column. |
 | Saves | JSON at `user://save.json`, written atomically. Saves from v0.1 are migrated. |
 
 Default keys (all rebindable): **Space** timer, **M** music, **D** decorate, **F10** mini window, **F11** fullscreen, **F12** screenshot, **Esc** close.
@@ -96,7 +96,7 @@ godot --headless --path . -- --selftest
 
 Runs 80 checks against a throwaway save file and exits non-zero on failure. It covers the catalogue, buying and level locks, placing, drag bounds, surface snapping, recolouring, hover, save/load, migration from v0.1, tasks, the timer, levels, rooms, layout slots, daily goals, key bindings, the user music folder, languages, time of day and reset.
 
-Developer flags, after `--`: `--fresh`, `--hour=23.5`, `--room=1`, `--xp=500`, `--locale=ms`, `--panel=focus,decorate`, `--onboarding`, `--shot=out.png`.
+Developer flags, after `--`: `--fresh`, `--hour=23.5`, `--room=1`, `--xp=500`, `--locale=en`, `--panel=focus,decorate`, `--onboarding`, `--shot=out.png`.
 
 ## Building
 
@@ -124,7 +124,7 @@ Could not be verified in the build environment and needs a check on a real Windo
 Not done:
 
 - Steam: the hooks are written, but GodotSteam is not bundled (it could not be downloaded here) and no App ID is set, so achievements and cloud saves are untested. See `docs/STEAM_RELEASE.md`.
-- Chinese, Japanese and Korean translations. The Malay translation is machine-written and wants a native read-through.
+- Chinese, Japanese and Korean translations. Translations are not included yet.
 - Controller and Steam Deck layout.
 
 ## Before publishing

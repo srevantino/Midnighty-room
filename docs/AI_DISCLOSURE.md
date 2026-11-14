@@ -25,7 +25,6 @@ Written November 2026. Not legal advice. Valve changes the wording without notic
 | Sprites, icons, logo, app icon | Drawn by Python scripts (`tools/gen_art.py`, `tools/gen_logo.py`) that the AI wrote. No image model was used, but the designs are the AI's | Yes, pre-generated | Commission or draw replacements with the same file names |
 | Music, ambience, sound effects | Synthesized by `tools/gen_audio.py`, written by the AI. No audio model was used, but the compositions are the AI's | Yes, pre-generated | License or commission tracks; record or buy ambience |
 | In-game text: interface, item names, first-run guide | Written by the AI | Yes, pre-generated | Rewrite it in your own words |
-| Malay translation | Written by the AI | Yes, pre-generated | Have a native speaker redo or correct it |
 | Store page: capsule art, screenshots, trailer, description | Not made yet | Depends on how you make them | Make them yourself or hire someone |
 
 Whether script-drawn pixel art counts as "generative AI content" is a question of Valve's wording. The cautious and honest reading is yes: an AI decided what every sprite looks like and what every note is.

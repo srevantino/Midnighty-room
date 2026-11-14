@@ -8,7 +8,7 @@ extends Control
 ##   --panel=focus,sounds open panels at start (focus tasks progress sounds decorate settings)
 ##   --room=1             start in room 0, 1 or 2 (ignores level locks)
 ##   --xp=500             grant XP for this run
-##   --locale=ms          force a language
+##   --locale=en          force a language
 ##   --onboarding         show the first-run guide
 ##   --shot=out.png       save a screenshot after a few frames, then quit
 ##   --selftest           run the logic checks in scripts/selftest.gd, then quit

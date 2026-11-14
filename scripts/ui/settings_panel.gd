@@ -12,7 +12,7 @@ const TIME_MODES := [
 ]
 const UI_SCALES := [[0.85, "Small"], [1.0, "Normal"], [1.15, "Large"]]
 const MINI_STYLES := [["room", "Mini room"], ["small", "Tiny room"], ["widget", "Timer only (see-through)"]]
-const LANGUAGE_NAMES := {"en": "English", "ms": "Bahasa Melayu", "zh_CN": "简体中文", "ja": "日本語", "ko": "한국어"}
+const LANGUAGE_NAMES := {"en": "English", "zh_CN": "简体中文", "ja": "日本語", "ko": "한국어"}
 
 ## Shown under About. Edit these lines to credit artists, musicians and testers.
 const CREDITS := [
@@ -46,7 +46,8 @@ func _ready() -> void:
 	var languages: Array = [["", "System language"]]
 	for locale in TranslationServer.get_loaded_locales():
 		languages.append([locale, LANGUAGE_NAMES.get(locale, locale)])
-	body.add_child(_labelled("Language", _option(languages, "locale", false)))
+	if languages.size() > 2:  # only worth showing once there is a choice
+		body.add_child(_labelled("Language", _option(languages, "locale", false)))
 
 	body.add_child(UIKit.section("Mini window"))
 	body.add_child(_labelled("Style", _option(MINI_STYLES, "mini_style")))
