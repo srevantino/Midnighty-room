@@ -125,7 +125,7 @@ Not done:
 
 - Steam: the hooks are written, but GodotSteam is not bundled (it could not be downloaded here) and no App ID is set, so achievements and cloud saves are untested. See `docs/STEAM_RELEASE.md`.
 - itch.io: the free option while Steam's US$100 fee waits. See `docs/ITCH_RELEASE.md` for the page text, pricing and upload steps.
-- Chinese, Japanese and Korean translations. Translations are not included yet.
+- Translations. Only English is included for now.
 - Controller and Steam Deck layout.
 
 ## Before publishing
